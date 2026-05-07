@@ -1,574 +1,708 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Morse Code Trainer</title>
-<style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Localhousee - Learn Morse Code</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-  body {
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-    background: #0b0e14;
-    color: #e0e4e8;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    padding: 2rem 1rem;
-  }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0b0e14;
+            color: #e0e4e8;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1rem;
+        }
 
-  .container { max-width: 820px; width: 100%; }
+        .container {
+            max-width: 820px;
+            width: 100%;
+        }
 
-  h1 {
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    margin-bottom: 0.25rem;
-    background: linear-gradient(135deg, #f0c040, #e06030);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+        h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, #f0c040, #e06030);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
 
-  .subtitle {
-    text-align: center;
-    color: #8892a0;
-    margin-bottom: 2rem;
-    font-size: 0.9rem;
-    letter-spacing: 0.08em;
-  }
+        .subtitle {
+            text-align: center;
+            color: #8892a0;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            letter-spacing: 0.08em;
+        }
 
-  section { margin-bottom: 2rem; }
-  section h2 {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 0.75rem;
-    color: #c0c8d4;
-    border-bottom: 1px solid #1e2530;
-    padding-bottom: 0.4rem;
-  }
+        section {
+            margin-bottom: 2rem;
+        }
 
-  /* Morse Table */
-  .morse-table {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 4px;
-    background: #131a24;
-    border-radius: 10px;
-    padding: 10px;
-  }
+        section h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.75rem;
+            color: #c0c8d4;
+            border-bottom: 1px solid #1e2530;
+            padding-bottom: 0.4rem;
+        }
 
-  .morse-cell {
-    background: #1a222e;
-    border-radius: 6px;
-    padding: 6px 4px;
-    text-align: center;
-    font-size: 0.85rem;
-    transition: background 0.15s;
-  }
+        .morse-table {
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            gap: 6px;
+            background: #131a24;
+            border-radius: 10px;
+            padding: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: #2a3545 #131a24;
+        }
 
-  .morse-cell .char {
-    font-weight: 600;
-    font-size: 1.1rem;
-  }
+        .morse-cell {
+            background: #1a222e;
+            border-radius: 6px;
+            padding: 6px 8px;
+            text-align: center;
+            font-size: 0.85rem;
+            transition: background 0.15s;
+            flex-shrink: 0;
+            min-width: 56px;
+        }
 
-  .morse-cell .code {
-    color: #78b0d0;
-    font-family: 'Courier New', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 2px;
-  }
+        .morse-cell .char {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
 
-  /* Input area */
-  .input-area {
-    background: #131a24;
-    border-radius: 14px;
-    padding: 1.75rem;
-    text-align: center;
-  }
+        .morse-cell .code {
+            color: #78b0d0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+        }
 
-  .status-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-    font-size: 0.85rem;
-    color: #8892a0;
-  }
+        .main-layout {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+        .main-layout .input-area { flex: 1; min-width: 0; margin-bottom: 0; }
+        .main-layout .ref-side { width: 300px; flex-shrink: 0; margin-bottom: 0; }
+        .ref-side .morse-table {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            overflow-x: visible;
+        }
+        .ref-side .morse-cell { min-width: auto; padding: 4px 3px; }
+        .ref-side .morse-cell .char { font-size: 0.9rem; }
+        .ref-side .morse-cell .code { font-size: 0.65rem; letter-spacing: 1px; }
+        .ref-side h2 { font-size: 0.9rem; }
 
-  .status-bar .mode {
-    padding: 3px 12px;
-    border-radius: 20px;
-    background: #1a222e;
-    font-size: 0.75rem;
-    font-weight: 500;
-    transition: all 0.15s;
-  }
+        .input-area {
+            background: #131a24;
+            border-radius: 14px;
+            padding: 1.75rem;
+            text-align: center;
+        }
 
-  .status-bar .mode.active-dot { background: #2a7a4a; color: #b0f0c0; }
-  .status-bar .mode.active-dash { background: #7a5a2a; color: #f0d0a0; }
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
+            color: #8892a0;
+        }
 
-  .morse-btn {
-    width: 200px;
-    height: 200px;
-    border-radius: 50%;
-    border: 3px solid #2a3545;
-    background: #1a2535;
-    color: #c0c8d4;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.1s ease;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    position: relative;
-    letter-spacing: 0.05em;
-  }
+        .status-bar .mode {
+            padding: 3px 12px;
+            border-radius: 20px;
+            background: #1a222e;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
 
-  .morse-btn:hover { border-color: #3a4a60; background: #1e2a3e; }
-  .morse-btn:active,
-  .morse-btn.pressed { transform: scale(0.95); }
+        .status-bar .mode.active-dot {
+            background: #2a7a4a;
+            color: #b0f0c0;
+        }
 
-  .morse-btn.dashing {
-    background: #3a2a0a;
-    border-color: #d0a030;
-    box-shadow: 0 0 40px rgba(208, 160, 48, 0.25);
-  }
+        .status-bar .mode.active-dash {
+            background: #7a5a2a;
+            color: #f0d0a0;
+        }
 
-  .morse-btn.dashing::after {
-    content: 'DASH';
-    position: absolute;
-    top: -32px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #d0a030;
-    letter-spacing: 2px;
-  }
+        .morse-btn {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 3px solid #2a3545;
+            background: #1a2535;
+            color: #c0c8d4;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            letter-spacing: 0.05em;
+        }
 
-  .morse-btn.dotted::after {
-    content: 'DOT';
-    position: absolute;
-    top: -32px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #60c090;
-    letter-spacing: 2px;
-    animation: fadeUp 0.4s ease forwards;
-  }
+        .morse-btn:hover {
+            border-color: #3a4a60;
+            background: #1e2a3e;
+        }
 
-  @keyframes fadeUp { 0% { opacity: 1; transform: translateX(-50%) translateY(0); } 100% { opacity: 0; transform: translateX(-50%) translateY(-12px); } }
+        .morse-btn:active,
+        .morse-btn.pressed {
+            transform: scale(0.95);
+        }
 
-  /* Display */
-  .display-area {
-    margin-top: 1.5rem;
-    background: #0d121c;
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-    min-height: 80px;
-  }
+        .morse-btn.dashing {
+            background: #3a2a0a;
+            border-color: #d0a030;
+            box-shadow: 0 0 40px rgba(208, 160, 48, 0.25);
+        }
 
-  .display-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
+        .morse-btn.dashing::after {
+            content: 'DASH';
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #d0a030;
+            letter-spacing: 2px;
+        }
 
-  .current-code {
-    font-family: 'Courier New', monospace;
-    font-size: 1.6rem;
-    letter-spacing: 6px;
-    color: #78b0d0;
-    min-height: 2rem;
-  }
+        .morse-btn.dotted::after {
+            content: 'DOT';
+            position: absolute;
+            top: -32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #60c090;
+            letter-spacing: 2px;
+            animation: fadeUp 0.4s ease forwards;
+        }
 
-  .current-code .cursor {
-    display: inline-block;
-    width: 2px;
-    height: 1.4rem;
-    background: #78b0d0;
-    animation: blink 0.8s step-end infinite;
-    vertical-align: middle;
-    margin-left: 4px;
-  }
+        @keyframes fadeUp {
+            0% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
 
-  @keyframes blink { 50% { opacity: 0; } }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-12px);
+            }
+        }
 
-  .char-preview {
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #f0c040;
-    min-width: 40px;
-    text-align: center;
-  }
+        .display-area {
+            margin-top: 1.5rem;
+            background: #0d121c;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            min-height: 80px;
+        }
 
-  /* Output */
-  .output-area {
-    margin-top: 0.75rem;
-    background: #0d121c;
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-  }
+        .display-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
 
-  .output-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    color: #5a6a7a;
-    margin-bottom: 0.4rem;
-  }
+        .current-code {
+            font-family: 'Courier New', monospace;
+            font-size: 1.6rem;
+            letter-spacing: 6px;
+            color: #78b0d0;
+            min-height: 2rem;
+        }
 
-  .output-text {
-    font-size: 1.5rem;
-    font-weight: 500;
-    word-break: break-all;
-    min-height: 2rem;
-    color: #e0e4e8;
-    line-height: 1.5;
-  }
+        .current-code .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.4rem;
+            background: #78b0d0;
+            animation: blink 0.8s step-end infinite;
+            vertical-align: middle;
+            margin-left: 4px;
+        }
 
-  .output-text .space { display: inline-block; min-width: 1.2em; }
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
 
-  .controls-row {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
+        .char-preview {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #f0c040;
+            min-width: 40px;
+            text-align: center;
+        }
 
-  .ctrl-btn {
-    background: #1a2535;
-    border: 1px solid #2a3545;
-    color: #a0aab4;
-    padding: 6px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.15s;
-  }
+        .output-area {
+            margin-top: 0.75rem;
+            background: #0d121c;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
 
-  .ctrl-btn:hover { background: #2a3545; color: #e0e4e8; }
+        .output-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #5a6a7a;
+            margin-bottom: 0.4rem;
+        }
 
-  .ctrl-btn.danger:hover { border-color: #a04040; color: #f08080; }
+        .output-text {
+            font-size: 1.5rem;
+            font-weight: 500;
+            word-break: break-all;
+            min-height: 2rem;
+            color: #e0e4e8;
+            line-height: 1.5;
+        }
 
-  .help-text {
-    margin-top: 1rem;
-    font-size: 0.78rem;
-    color: #5a6a7a;
-    line-height: 1.6;
-  }
+        .output-text .space {
+            display: inline-block;
+            min-width: 1.2em;
+        }
 
-  .help-text kbd {
-    display: inline-block;
-    background: #1a2535;
-    border: 1px solid #2a3545;
-    border-radius: 4px;
-    padding: 1px 8px;
-    font-size: 0.72rem;
-    font-family: inherit;
-    color: #b0b8c4;
-  }
+        .controls-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
 
-  @media (max-width: 600px) {
-    .morse-table { grid-template-columns: repeat(4, 1fr); }
-    .morse-btn { width: 160px; height: 160px; }
-    .current-code { font-size: 1.2rem; }
-    .output-text { font-size: 1.2rem; }
-    .char-preview { font-size: 1.8rem; }
-  }
+        .ctrl-btn {
+            background: #1a2535;
+            border: 1px solid #2a3545;
+            color: #a0aab4;
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.15s;
+        }
 
-  @media (max-width: 400px) {
-    .morse-table { grid-template-columns: repeat(3, 1fr); }
-    .morse-btn { width: 130px; height: 130px; }
-  }
-</style>
+        .ctrl-btn:hover {
+            background: #2a3545;
+            color: #e0e4e8;
+        }
+
+        .ctrl-btn.danger:hover {
+            border-color: #a04040;
+            color: #f08080;
+        }
+
+        .help-text {
+            margin-top: 1rem;
+            font-size: 0.78rem;
+            color: #5a6a7a;
+            line-height: 1.6;
+        }
+
+        .help-text kbd {
+            display: inline-block;
+            background: #1a2535;
+            border: 1px solid #2a3545;
+            border-radius: 4px;
+            padding: 1px 8px;
+            font-size: 0.72rem;
+            font-family: inherit;
+            color: #b0b8c4;
+        }
+
+        @media (max-width: 600px) {
+            .main-layout {
+                display: block;
+            }
+            .main-layout .ref-side {
+                width: auto;
+            }
+            .morse-table {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                overflow-x: visible;
+            }
+            .morse-cell { min-width: auto; }
+
+            .morse-btn {
+                width: 160px;
+                height: 160px;
+            }
+
+            .current-code {
+                font-size: 1.2rem;
+            }
+
+            .output-text {
+                font-size: 1.2rem;
+            }
+
+            .char-preview {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .morse-table {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .morse-btn {
+                width: 130px;
+                height: 130px;
+            }
+        }
+    </style>
 </head>
+
 <body>
-<div class="container">
-  <h1>-- --- .-. ... .</h1>
-  <p class="subtitle">MORSE CODE TRAINER &middot; ITU Standard</p>
+    <div class="container">
+        <h1>-- --- .-. ... .</h1>
+        <p class="subtitle">LEARN MORSE CODE</p>
 
-  <section>
-    <h2>Reference Table</h2>
-    <div class="morse-table" id="morseTable"></div>
-  </section>
+    <div class="main-layout">
+        <section class="input-area">
+            <div class="status-bar">
+                <span class="mode" id="modeLabel">READY</span>
+                <span id="timerDisplay">0.0s</span>
+            </div>
 
-  <section class="input-area">
-    <div class="status-bar">
-      <span class="mode" id="modeLabel">READY</span>
-      <span id="timerDisplay">0.0s</span>
+            <button class="morse-btn" id="morseBtn">TAP<br>OR HOLD</button>
+
+            <div class="display-area">
+                <div class="display-row">
+                    <div class="current-code" id="currentCode"><span class="cursor"></span></div>
+                    <div class="char-preview" id="charPreview">&nbsp;</div>
+                </div>
+            </div>
+
+            <div class="output-area">
+                <div class="output-label">Decoded message</div>
+                <div class="output-text" id="outputText">&#x200B;</div>
+            </div>
+
+            <div class="controls-row">
+                <button class="ctrl-btn" id="spaceBtn">+ SPACE</button>
+                <button class="ctrl-btn" id="backspaceBtn">&larr; BACK</button>
+                <button class="ctrl-btn danger" id="clearBtn">&times; CLEAR</button>
+            </div>
+
+            <div class="help-text">
+                <kbd>Tap</kbd> briefly = <strong>dot</strong> &middot;
+                <kbd>Hold</kbd> &gt;0.3s = <strong>dash</strong> &middot;
+                Pause 1.0s = next char &middot; <kbd>SPACE</kbd> button between words
+            </div>
+        </section>
+
+        <section class="ref-side">
+            <h2>Reference Table</h2>
+            <div class="morse-table" id="morseTable"></div>
+        </section>
     </div>
 
-    <button class="morse-btn" id="morseBtn">TAP<br>OR HOLD</button>
-
-    <div class="display-area">
-      <div class="display-row">
-        <div class="current-code" id="currentCode"><span class="cursor"></span></div>
-        <div class="char-preview" id="charPreview">&nbsp;</div>
-      </div>
     </div>
 
-    <div class="output-area">
-      <div class="output-label">Decoded message</div>
-      <div class="output-text" id="outputText">&#x200B;</div>
-    </div>
+    <script>
+        const MORSE = {
+            // Letters
+            '.-': 'A', '-...': 'B', '-.-.': 'C', '-..': 'D',
+            '.': 'E', '..-.': 'F', '--.': 'G', '....': 'H',
+            '..': 'I', '.---': 'J', '-.-': 'K', '.-..': 'L',
+            '--': 'M', '-.': 'N', '---': 'O', '.--.': 'P',
+            '--.-': 'Q', '.-.': 'R', '...': 'S', '-': 'T',
+            '..-': 'U', '...-': 'V', '.--': 'W', '-..-': 'X',
+            '-.--': 'Y', '--..': 'Z',
+            // Digits
+            '-----': '0', '.----': '1', '..---': '2', '...--': '3',
+            '....-': '4', '.....': '5', '-....': '6', '--...': '7',
+            '---..': '8', '----.': '9',
+            // Punctuation (ITU-R M.1677-1 standard only)
+            '.-.-.-': '.', '--..--': ',', '..--..': '?', '.----.': "'",
+            '-..-.': '/', '-.--.': '(', '-.--.-': ')',
+            '---...': ':', '-...-': '=',
+            '.-.-.': '+', '-....-': '-', '.-..-.': '"',
+            '.--.-.': '@',
+        };
 
-    <div class="controls-row">
-      <button class="ctrl-btn" id="spaceBtn">+ SPACE</button>
-      <button class="ctrl-btn" id="backspaceBtn">&larr; BACK</button>
-      <button class="ctrl-btn danger" id="clearBtn">&times; CLEAR</button>
-    </div>
+        const CHAR_TO_MORSE = {};
+        for (const [code, ch] of Object.entries(MORSE)) {
+            CHAR_TO_MORSE[ch] = code;
+        }
 
-    <div class="help-text">
-      <kbd>Tap</kbd> briefly = <strong>dot</strong> &middot;
-      <kbd>Hold</kbd> &gt;0.3s = <strong>dash</strong> &middot;
-      Pause 0.5s = next char &middot; <kbd>SPACE</kbd> button between words
-    </div>
-  </section>
-</div>
+        const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const digits = '0123456789';
 
-<script>
-// ITU standard Morse code mapping (marine / military)
-const MORSE = {
-  // Letters
-  '.-': 'A',   '-...': 'B', '-.-.': 'C', '-..': 'D',
-  '.': 'E',    '..-.': 'F', '--.': 'G', '....': 'H',
-  '..': 'I',   '.---': 'J', '-.-': 'K', '.-..': 'L',
-  '--': 'M',   '-.': 'N',   '---': 'O', '.--.': 'P',
-  '--.-': 'Q', '.-.': 'R',  '...': 'S', '-': 'T',
-  '..-': 'U',  '...-': 'V', '.--': 'W', '-..-': 'X',
-  '-.--': 'Y', '--..': 'Z',
-  // Digits
-  '-----': '0', '.----': '1', '..---': '2', '...--': '3',
-  '....-': '4', '.....': '5', '-....': '6', '--...': '7',
-  '---..': '8', '----.': '9',
-  // Punctuation
-  '.-.-.-': '.', '--..--': ',', '..--..': '?', '.----.': "'",
-  '-.-.--': '!', '-..-.': '/', '-.--.': '(', '-.--.-': ')',
-  '.-...': '&', '---...': ':', '-.-.-.': ';', '-...-': '=',
-  '.-.-.': '+', '-....-': '-', '..--.-': '_', '.-..-.': '"',
-  '...-..-': '$', '.--.-.': '@',
-};
+        function renderTable() {
+            const container = document.getElementById('morseTable');
+            container.innerHTML = '';
+            const all = [...letters, ...digits, '.', ',', '?', "'", '(', ')', '"', '/', ':', '-', '=', '+', '@'];
+            for (const ch of all) {
+                const code = CHAR_TO_MORSE[ch];
+                if (!code) continue;
+                const cell = document.createElement('div');
+                cell.className = 'morse-cell';
+                cell.innerHTML = `<div class="char">${ch}</div><div class="code">${code.replace(/\./g, '&#9679;').replace(/-/g, '&#9472;')}</div>`;
+                container.appendChild(cell);
+            }
+        }
+        renderTable();
 
-// Reverse map for table
-const CHAR_TO_MORSE = {};
-for (const [code, ch] of Object.entries(MORSE)) {
-  CHAR_TO_MORSE[ch] = code;
-}
+        let audioCtx = null;
+        let osc = null;
+        let gainNode = null;
+        const FREQ = 700;
+        const VOLUME = 0.3;
+        function ensureAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
 
-const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-const digits = '0123456789';
+        function startTone() {
+            ensureAudio();
+            if (osc) return;
+            osc = audioCtx.createOscillator();
+            gainNode = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = FREQ;
+            gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(VOLUME, audioCtx.currentTime + 0.005);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.start();
+        }
 
-function renderTable() {
-  const container = document.getElementById('morseTable');
-  container.innerHTML = '';
-  const all = [...letters, ...digits, '.', ',', '?', '!', '/', ':', ';', '-', '@', '&'];
-  for (const ch of all) {
-    const code = CHAR_TO_MORSE[ch];
-    if (!code) continue;
-    const cell = document.createElement('div');
-    cell.className = 'morse-cell';
-    cell.innerHTML = `<div class="char">${ch}</div><div class="code">${code.replace(/\./g, '&#9679;').replace(/-/g, '&#9472;')}</div>`;
-    container.appendChild(cell);
-  }
-}
-renderTable();
+        function stopTone() {
+            if (!osc) return;
+            gainNode.gain.cancelScheduledValues(audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(gainNode.gain.value, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.01);
+            osc.stop(audioCtx.currentTime + 0.015);
+            osc = null;
+            gainNode = null;
+        }
 
-// --- Input engine ---
+        const morseBtn = document.getElementById('morseBtn');
+        const currentCodeEl = document.getElementById('currentCode');
+        const charPreviewEl = document.getElementById('charPreview');
+        const outputTextEl = document.getElementById('outputText');
+        const modeLabel = document.getElementById('modeLabel');
+        const timerDisplay = document.getElementById('timerDisplay');
 
-const morseBtn = document.getElementById('morseBtn');
-const currentCodeEl = document.getElementById('currentCode');
-const charPreviewEl = document.getElementById('charPreview');
-const outputTextEl = document.getElementById('outputText');
-const modeLabel = document.getElementById('modeLabel');
-const timerDisplay = document.getElementById('timerDisplay');
+        let pressStartTime = 0;
+        let holdTimer = null;
+        let isPressed = false;
 
-let pressStartTime = 0;
-let holdTimer = null;
-let isPressed = false;
+        let currentSequence = [];
+        let outputChars = [];
 
-let currentSequence = [];
-let outputChars = [];
+        const DOT_THRESHOLD = 300;
+        const CHAR_TIMEOUT = 1000;
 
-const DOT_THRESHOLD = 300;
-const CHAR_TIMEOUT = 500;
+        let charTimer = null;
 
-let charTimer = null;
+        function updateDisplay() {
+            const codeStr = currentSequence.join('');
+            currentCodeEl.innerHTML = codeStr
+                ? `<span class="cursor"></span>${codeStr.replace(/\./g, '&#9679;').replace(/-/g, '&#9472;')}<span class="cursor"></span>`
+                : `<span class="cursor"></span>`;
 
-function updateDisplay() {
-  const codeStr = currentSequence.join('');
-  currentCodeEl.innerHTML = codeStr
-    ? `<span class="cursor"></span>${codeStr.replace(/\./g, '&#9679;').replace(/-/g, '&#9472;')}<span class="cursor"></span>`
-    : `<span class="cursor"></span>`;
+            const ch = MORSE[codeStr];
+            charPreviewEl.innerHTML = ch ? ch : (codeStr.length > 0 ? '?' : '&nbsp;');
+        }
 
-  const ch = MORSE[codeStr];
-  charPreviewEl.innerHTML = ch ? ch : (codeStr.length > 0 ? '?' : '&nbsp;');
-}
+        function appendOutput(ch) {
+            outputChars.push(ch);
+            renderOutput();
+        }
 
-function appendOutput(ch) {
-  outputChars.push(ch);
-  renderOutput();
-}
+        function renderOutput() {
+            outputTextEl.textContent = outputChars.join('');
+            outputTextEl.scrollLeft = outputTextEl.scrollWidth;
+        }
 
-function renderOutput() {
-  outputTextEl.textContent = outputChars.join('');
-  outputTextEl.scrollLeft = outputTextEl.scrollWidth;
-}
+        function flushSequence() {
+            if (currentSequence.length === 0) return;
+            const code = currentSequence.join('');
+            const ch = MORSE[code];
+            appendOutput(ch || '?');
+            currentSequence = [];
+            updateDisplay();
+        }
 
-function flushSequence() {
-  if (currentSequence.length === 0) return;
-  const code = currentSequence.join('');
-  const ch = MORSE[code];
-  appendOutput(ch || '?');
-  currentSequence = [];
-  updateDisplay();
-}
+        function resetTimers() {
+            if (charTimer) clearTimeout(charTimer);
+        }
 
-function resetTimers() {
-  if (charTimer) clearTimeout(charTimer);
-}
+        function startCharTimer() {
+            if (charTimer) clearTimeout(charTimer);
+            charTimer = setTimeout(() => {
+                flushSequence();
+            }, CHAR_TIMEOUT);
+        }
 
-function startCharTimer() {
-  if (charTimer) clearTimeout(charTimer);
-  charTimer = setTimeout(() => {
-    flushSequence();
-  }, CHAR_TIMEOUT);
-}
+        function commitDash() {
+            currentSequence.push('-');
+            updateDisplay();
+            resetTimers();
+            startCharTimer();
+            morseBtn.classList.remove('pressed');
+            morseBtn.classList.add('dashing');
+            modeLabel.textContent = 'DASH';
+            modeLabel.className = 'mode active-dash';
+        }
 
-function commitDash() {
-  currentSequence.push('-');
-  updateDisplay();
-  resetTimers();
-  startCharTimer();
-  morseBtn.classList.remove('pressed');
-  morseBtn.classList.add('dashing');
-  modeLabel.textContent = 'DASH';
-  modeLabel.className = 'mode active-dash';
-}
+        morseBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            if (isPressed) return;
+            isPressed = true;
+            pressStartTime = performance.now();
+            morseBtn.classList.add('pressed');
+            startTone();
 
-morseBtn.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  if (isPressed) return;
-  isPressed = true;
-  pressStartTime = performance.now();
-  morseBtn.classList.add('pressed');
+            holdTimer = setTimeout(() => {
+                if (!isPressed) return;
+                commitDash();
+            }, DOT_THRESHOLD);
 
-  holdTimer = setTimeout(() => {
-    if (!isPressed) return;
-    commitDash();
-  }, DOT_THRESHOLD);
+            const updateTimer = () => {
+                if (!isPressed) return;
+                const elapsed = (performance.now() - pressStartTime) / 1000;
+                timerDisplay.textContent = elapsed.toFixed(1) + 's';
+                requestAnimationFrame(updateTimer);
+            };
+            requestAnimationFrame(updateTimer);
+        });
 
-  const updateTimer = () => {
-    if (!isPressed) return;
-    const elapsed = (performance.now() - pressStartTime) / 1000;
-    timerDisplay.textContent = elapsed.toFixed(1) + 's';
-    requestAnimationFrame(updateTimer);
-  };
-  requestAnimationFrame(updateTimer);
-});
+        morseBtn.addEventListener('pointerup', (e) => {
+            e.preventDefault();
+            if (!isPressed) return;
+            isPressed = false;
+            stopTone();
+            const elapsed = performance.now() - pressStartTime;
 
-morseBtn.addEventListener('pointerup', (e) => {
-  e.preventDefault();
-  if (!isPressed) return;
-  isPressed = false;
-  const elapsed = performance.now() - pressStartTime;
+            if (holdTimer) clearTimeout(holdTimer);
+            timerDisplay.textContent = '0.0s';
 
-  if (holdTimer) clearTimeout(holdTimer);
-  timerDisplay.textContent = '0.0s';
+            if (elapsed < DOT_THRESHOLD) {
+                currentSequence.push('.');
+                updateDisplay();
+                resetTimers();
+                startCharTimer();
+                modeLabel.textContent = 'DOT';
+                modeLabel.className = 'mode active-dot';
+                morseBtn.className = 'morse-btn dotted';
+                setTimeout(() => morseBtn.classList.remove('dotted'), 400);
+            } else {
+                morseBtn.classList.remove('dashing');
+                morseBtn.className = 'morse-btn';
+                modeLabel.textContent = 'READY';
+                modeLabel.className = 'mode';
+            }
+        });
 
-  if (elapsed < DOT_THRESHOLD) {
-    currentSequence.push('.');
-    updateDisplay();
-    resetTimers();
-    startCharTimer();
-    modeLabel.textContent = 'DOT';
-    modeLabel.className = 'mode active-dot';
-    morseBtn.className = 'morse-btn dotted';
-    setTimeout(() => morseBtn.classList.remove('dotted'), 400);
-  } else {
-    morseBtn.classList.remove('dashing');
-    morseBtn.className = 'morse-btn';
-    modeLabel.textContent = 'READY';
-    modeLabel.className = 'mode';
-  }
-});
+        morseBtn.addEventListener('pointerleave', (e) => {
+            if (!isPressed) return;
+            isPressed = false;
+            stopTone();
+            if (holdTimer) clearTimeout(holdTimer);
+            timerDisplay.textContent = '0.0s';
+            morseBtn.classList.remove('pressed', 'dashing');
+            modeLabel.textContent = 'READY';
+            modeLabel.className = 'mode';
+        });
 
-morseBtn.addEventListener('pointerleave', (e) => {
-  if (!isPressed) return;
-  isPressed = false;
-  if (holdTimer) clearTimeout(holdTimer);
-  timerDisplay.textContent = '0.0s';
-  morseBtn.classList.remove('pressed', 'dashing');
-  modeLabel.textContent = 'READY';
-  modeLabel.className = 'mode';
-});
+        morseBtn.addEventListener('pointercancel', (e) => {
+            isPressed = false;
+            stopTone();
+            if (holdTimer) clearTimeout(holdTimer);
+            timerDisplay.textContent = '0.0s';
+            morseBtn.classList.remove('pressed', 'dashing');
+            modeLabel.textContent = 'READY';
+            modeLabel.className = 'mode';
+        });
 
-morseBtn.addEventListener('pointercancel', (e) => {
-  isPressed = false;
-  if (holdTimer) clearTimeout(holdTimer);
-  timerDisplay.textContent = '0.0s';
-  morseBtn.classList.remove('pressed', 'dashing');
-  modeLabel.textContent = 'READY';
-  modeLabel.className = 'mode';
-});
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' && !e.repeat) {
+                e.preventDefault();
+                morseBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+            }
+            if (e.key === 'Backspace' && !e.repeat) {
+                e.preventDefault();
+                doBackspace();
+            }
+        });
 
-// --- Keyboard support ---
-document.addEventListener('keydown', (e) => {
-  if (e.key === ' ' && !e.repeat) {
-    e.preventDefault();
-    morseBtn.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
-  }
-  if (e.key === 'Backspace' && !e.repeat) {
-    e.preventDefault();
-    doBackspace();
-  }
-});
+        document.addEventListener('keyup', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                morseBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
+            }
+        });
 
-document.addEventListener('keyup', (e) => {
-  if (e.key === ' ') {
-    e.preventDefault();
-    morseBtn.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
-  }
-});
+        document.getElementById('spaceBtn').addEventListener('click', () => {
+            flushSequence();
+            appendOutput(' ');
+        });
 
-// --- Control buttons ---
-document.getElementById('spaceBtn').addEventListener('click', () => {
-  flushSequence();
-  appendOutput(' ');
-});
+        document.getElementById('backspaceBtn').addEventListener('click', doBackspace);
 
-document.getElementById('backspaceBtn').addEventListener('click', doBackspace);
+        function doBackspace() {
+            if (currentSequence.length > 0) {
+                currentSequence.pop();
+                updateDisplay();
+                resetTimers();
+                if (currentSequence.length > 0) startCharTimer();
+            } else if (outputChars.length > 0) {
+                outputChars.pop();
+                renderOutput();
+            }
+        }
 
-function doBackspace() {
-  if (currentSequence.length > 0) {
-    currentSequence.pop();
-    updateDisplay();
-    resetTimers();
-    if (currentSequence.length > 0) startCharTimer();
-  } else if (outputChars.length > 0) {
-    outputChars.pop();
-    renderOutput();
-  }
-}
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            currentSequence = [];
+            outputChars = [];
+            resetTimers();
+            updateDisplay();
+            renderOutput();
+            modeLabel.textContent = 'READY';
+            modeLabel.className = 'mode';
+        });
 
-document.getElementById('clearBtn').addEventListener('click', () => {
-  currentSequence = [];
-  outputChars = [];
-  resetTimers();
-  updateDisplay();
-  renderOutput();
-  modeLabel.textContent = 'READY';
-  modeLabel.className = 'mode';
-});
-
-// Prevent context menu on long press
-morseBtn.addEventListener('contextmenu', (e) => e.preventDefault());
-</script>
+        morseBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+    </script>
 </body>
+
 </html>
